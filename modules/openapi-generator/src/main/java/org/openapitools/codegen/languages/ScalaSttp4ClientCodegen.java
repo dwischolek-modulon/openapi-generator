@@ -24,7 +24,7 @@ import java.util.regex.Pattern;
 
 public class ScalaSttp4ClientCodegen extends AbstractScalaCodegen implements CodegenConfig {
     private static final StringProperty STTP_CLIENT_VERSION = new StringProperty("sttpClientVersion", "The version of " +
-            "sttp client", "4.0.0-M1");
+            "sttp client", "4.0.3");
     private static final BooleanProperty USE_SEPARATE_ERROR_CHANNEL = new BooleanProperty("separateErrorChannel",
             "Whether to return response as " +
                     "F[Either[ResponseError[ErrorType], ReturnType]]] or to flatten " +
@@ -190,6 +190,14 @@ public class ScalaSttp4ClientCodegen extends AbstractScalaCodegen implements Cod
                                           List<Server> servers) {
         CodegenOperation op = super.fromOperation(path, httpMethod, operation, servers);
         op.path = encodePath(path);
+        // Make json request body the default, explicitly (was somewhat implicit before)
+        if (op.consumes == null || op.consumes.isEmpty()) {
+            op.consumes = new ArrayList<>();
+            Map<String, String> consumesEntry = new HashMap<>();
+            consumesEntry.put("mediaType", "application/json");
+            consumesEntry.put("isJson", "true");
+            op.consumes.add(consumesEntry);
+        }
         return op;
     }
 
